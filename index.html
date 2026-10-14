@@ -189,7 +189,8 @@ function parseMember(member, rows){
     const c=r.map(clean); const a=c[0];
     if(!c.some(Boolean)) continue;
     if(a==="곡정하기"){mode="cand";continue;}
-    if(a && (c[1]||"").startsWith("취향") && /합주|익숙/.test(c[2]||"")){mode="exist";continue;}
+    // 기존곡 구역 머리글: A열이 '기존곡 의견'/'베이스 정리' 등이거나, B·C열이 취향/합주(익숙함) 머리글인 행
+    if(/^(기존곡|베이스\s*정리)/.test(a) || (a && (c[1]||"").startsWith("취향") && /합주|익숙/.test(c[2]||""))){mode="exist";continue;}
     if(!a){ const t=c.filter(Boolean).join(" "); if(t) out.memo.push(t); continue; }
     if(mode==="cand"){
       const extra=c.slice(5).filter(Boolean);
