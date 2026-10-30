@@ -1,361 +1,124 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>곡정하기 대시보드</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>노래 순서 투표</title>
 <style>
-:root{
-  --bg:#f6f6f4;--card:#ffffff;--text:#1d1d1b;--muted:#6f6f6a;--line:#e4e4df;
-  --accent:#3f6ad8;--good:#2e9d63;--mid:#d39b2a;--bad:#d2544a;--none:#b9b9b3;
-  --chip-good:#e3f4ea;--chip-mid:#fbf0d9;--chip-bad:#fbe3e1;--chip-none:#eeeeea;
-}
-@media (prefers-color-scheme:dark){
-  :root{--bg:#141414;--card:#1e1e1d;--text:#ececea;--muted:#9a9a94;--line:#2f2f2d;
-  --accent:#7b9cf0;--good:#4cc282;--mid:#e3b04b;--bad:#ec7b71;--none:#5c5c58;
-  --chip-good:#1d3527;--chip-mid:#3a3020;--chip-bad:#3d2321;--chip-none:#2a2a28;}
-}
+:root{--bg:#faf8f5;--card:#fff;--tx:#1d1b19;--mu:#78716c;--ac:#e0562b;--bd:#e7e2dc;--bar:#f3d9cf;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171513;--card:#221f1c;--tx:#f3efea;--mu:#a39b92;--ac:#ff7a4d;--bd:#38332e;--bar:#4a2a1e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#171513;--card:#221f1c;--tx:#f3efea;--mu:#a39b92;--ac:#ff7a4d;--bd:#38332e;--bar:#4a2a1e;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;font-size:15px;line-height:1.45}
-.wrap{max-width:880px;margin:0 auto;padding:24px 16px 48px}
-header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:18px}
-h1{font-size:22px;margin:0}
-.sub{color:var(--muted);font-size:13px;margin-top:4px}
-.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
-.btn:hover{border-color:var(--accent)}
-.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.tab{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:6px 14px;font-size:14px;cursor:pointer}
-.tab.on{background:var(--text);color:var(--bg);border-color:var(--text)}
-.sort{margin-left:auto;font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center}
-.sort select{background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:13px}
-.legend{font-size:12px;color:var(--muted);margin:0 0 12px}
-.list{display:flex;flex-direction:column;gap:8px}
-.item{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.row{display:grid;grid-template-columns:34px 1fr auto 36px;gap:12px;align-items:center;padding:12px 10px 12px 14px}
-.rank{font-weight:700;font-size:18px;color:var(--muted);text-align:center}
-.item:nth-child(-n+3) .rank{color:var(--accent)}
-.name{font-weight:600;word-break:keep-all}
-.flags{margin-top:3px;display:flex;gap:6px;flex-wrap:wrap}
-.flag{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--chip-bad);color:var(--bad)}
-.flag.n{background:var(--chip-none);color:var(--muted)}
-.scores{display:flex;gap:14px}
-.sc{width:96px}
-.sc .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-.sc .lbl b{color:var(--text);font-size:14px}
-.bar{height:6px;background:var(--chip-none);border-radius:3px;margin-top:4px;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:3px}
-.tg{border:none;background:transparent;color:var(--muted);cursor:pointer;width:32px;height:32px;border-radius:8px;font-size:16px;transition:transform .2s}
-.tg:hover{background:var(--chip-none)}
-.item.open .tg{transform:rotate(90deg)}
-.detail{display:none;border-top:1px solid var(--line);padding:6px 14px 12px}
-.item.open .detail{display:block}
-table{width:100%;border-collapse:collapse;font-size:13px}
-td{padding:7px 6px;border-bottom:1px solid var(--line);vertical-align:top}
-tr:last-child td{border-bottom:none}
-td.m{font-weight:600;white-space:nowrap;width:64px}
-td.c{white-space:nowrap;width:1%}
-td.cm{color:var(--text)}
-td.cm a{color:var(--accent)}
-.chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;white-space:nowrap}
-.g{background:var(--chip-good);color:var(--good)}.y{background:var(--chip-mid);color:var(--mid)}
-.r{background:var(--chip-bad);color:var(--bad)}.x{background:var(--chip-none);color:var(--muted)}
-.notes{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px}
-.notes h3{font-size:13px;margin:0 0 6px;color:var(--muted)}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:22px}
-.ptop{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
-.panel h2{font-size:16px;margin:0}
-.panel h3{font-size:13px;color:var(--muted);margin:14px 0 6px;font-weight:600}
-.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.sg{border:none;background:transparent;color:var(--muted);padding:5px 12px;font-size:13px;cursor:pointer}
-.sg.on{background:var(--text);color:var(--bg)}
-.todo{display:flex;flex-direction:column;gap:6px}
-.todo .tm{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:start;font-size:13px}
-.todo .tm b{padding-top:2px}
-.todo ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 6px}
-.todo li{background:var(--chip-none);border-radius:6px;padding:2px 8px;font-size:12px}
-.todo li::before{content:"☐ ";color:var(--muted)}
-.todo li small{color:var(--bad)}
-.done{font-size:13px;color:var(--good)}
-.op td.s{font-weight:600;width:28%;word-break:keep-all}
-.op td.cm .chip{margin-right:4px}
-.op .txt{margin-top:4px}
-.opwrap{max-height:420px;overflow:auto}
-.more{width:100%;margin-top:8px}
-.state{padding:40px 0;text-align:center;color:var(--muted)}
-.err{color:var(--bad)}
-@media (max-width:600px){
-  .row{grid-template-columns:26px 1fr 32px;row-gap:8px}
-  .scores{grid-column:2/3;grid-row:2}
-  .tg{grid-column:3;grid-row:1}
-  .sc{width:auto;flex:1}
-  .sort{margin-left:0;width:100%}
-}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.4}
+main{max-width:520px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mu);font-size:14px;margin:0 0 16px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;font-weight:600}
+.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-bottom:8px;position:relative;overflow:hidden}
+.n{width:26px;height:26px;border-radius:50%;background:var(--ac);color:#fff;font-weight:700;font-size:13px;display:grid;place-items:center;flex:none;z-index:1}
+.t{flex:1;min-width:0;z-index:1}
+.t b{display:block;font-size:15px;word-break:keep-all}
+.t small{color:var(--mu);font-size:12px}
+.mv{display:flex;flex-direction:column;gap:4px;z-index:1}
+.mv button{width:36px;height:28px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:8px;font-size:14px}
+.mv button:disabled{opacity:.3}
+.fill{position:absolute;left:0;top:0;bottom:0;background:var(--bar);opacity:.7}
+.go{width:100%;padding:14px;border:0;border-radius:12px;background:var(--ac);color:#fff;font:inherit;font-weight:700;font-size:16px;margin-top:6px}
+.go:disabled{opacity:.5}
+.msg{text-align:center;color:var(--mu);font-size:13px;margin-top:10px;min-height:18px}
+.live{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu);margin:-4px 0 12px}
+.live i{width:8px;height:8px;border-radius:50%;background:#aaa}
+.live.on i{background:#22c55e;animation:p 1.6s infinite}
+@keyframes p{50%{opacity:.3}}
+#f input,#f textarea{width:100%;padding:11px 12px;border:1px solid var(--bd);border-radius:12px;background:var(--card);color:var(--tx);font:inherit;font-size:15px;margin-top:4px;resize:vertical}
+.cm{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.cm b{display:block;font-size:12px;color:var(--mu);margin-bottom:2px}
+h2{font-size:16px;margin:20px 0 8px}
+.pts{font-weight:700;font-size:14px;color:var(--ac);z-index:1}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div>
-      <h1>곡정하기</h1>
-      <div class="sub" id="meta">불러오는 중…</div>
-    </div>
-    <button class="btn" id="reload">새로고침</button>
-  </header>
-
-  <section class="panel" id="panel">
-    <div class="ptop">
-      <h2>의견 모아보기</h2>
-      <div class="seg">
-        <button class="sg on" data-ptab="cand">후보곡</button>
-        <button class="sg" data-ptab="exist">기존곡</button>
-      </div>
-    </div>
-    <div id="todo"></div>
-    <div id="opinions"></div>
-  </section>
-
-  <div class="tabs">
-    <button class="tab on" data-tab="cand">후보곡 순위</button>
-    <button class="tab" data-tab="exist">기존곡 현황</button>
-    <label class="sort">정렬
-      <select id="sort">
-        <option value="total">합계</option>
-        <option value="a">취향점수</option>
-        <option value="b">합주점수</option>
-      </select>
-    </label>
-  </div>
-  <p class="legend" id="legend"></p>
-  <div class="list" id="list"><div class="state">시트를 읽는 중…</div></div>
-  <div id="notes"></div>
-</div>
-
+<main>
+<h1>🎤 노래 순서 투표</h1>
+<p class="sub">내가 원하는 순서로 정렬해서 제출하세요. 모두의 투표를 합산해 최종 순서가 정해져요.</p>
+<div class="tabs"><button id="tv" class="on">내 투표</button><button id="tr"><span id="lk">🔒</span> 결과 <span id="cnt"></span></button></div>
+<div class="live"><i></i><span id="lv">실시간 연결 중…</span></div>
+<div id="v"></div>
+<div id="f"><input id="nm" maxlength="20" placeholder="닉네임 (선택)"><textarea id="cm" maxlength="300" rows="3" placeholder="코멘트를 남겨주세요 (선택) — 예: 첫 곡은 신나는 곡으로!"></textarea><button class="go" id="sub">투표 제출</button></div>
+<div id="r" hidden></div>
+<div class="msg" id="msg"></div>
+</main>
 <script>
-/* ===== 설정 ===== */
-const SHEET_ID = "1vl8tnoQpPwbBo0lYDxKzWTOdKsZTY0McEEWbWGvvyoI";
-// 멤버 탭 이름 (시트 탭이 추가/변경되면 여기만 수정)
-const MEMBERS = ["김기타","이베이스","최기타","구베이스","안기타","이건반","장보컬"];
-const AUTO_REFRESH_SEC = 60;
-// 후보곡 대상에서 빠지는 멤버 (미응답 체크·점수 집계 모두 제외)
-const CAND_EXCLUDE = ["최기타"];
-const inKind = (m,kind) => !(kind==="cand" && CAND_EXCLUDE.includes(m));
-
-// 점수표 (0~2점, 빈칸/안쳐봄은 제외)
-const CAND_A = {"좋음":2,"무난":1,"이건 좀":0};               // 후보곡 취향
-const CAND_B = {"난 가능":2,"해봐야 알 듯":1,"이건 좀":0};      // 후보곡 합주가능
-const EXIST_A = {"좋음":2,"그냥그냥":1,"무난":1,"이건 좀":0};   // 기존곡 취향
-const EXIST_B = {"편하게 침":2,"그냥저냥":1,"좀 빡셈":0};       // 기존곡 숙련 (안쳐봄 제외)
-
-/* ===== 데이터 읽기 ===== */
-// JSONP 방식: 파일로 열어도(file://) 웹에 올려도 CORS 제약 없이 동작
-let CB_SEQ=0;
-function jsonp(sheet){
-  return new Promise((resolve,reject)=>{
-    const cb="__gviz_cb"+(++CB_SEQ);
-    const s=document.createElement("script");
-    const done=()=>{delete window[cb];s.remove();clearTimeout(timer);};
-    const timer=setTimeout(()=>{done();reject(new Error("timeout"));},15000);
-    window[cb]=resp=>{
-      done();
-      if(!resp||resp.status==="error"||!resp.table) return reject(new Error("bad response"));
-      const t=resp.table;
-      resolve(t.rows.map(r=>t.cols.map((_,i)=>{const c=r.c&&r.c[i];return c&&c.v!=null?String(c.v):"";})));
-    };
-    s.onerror=()=>{done();reject(new Error("load error"));};
-    s.src=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=0&sheet=${encodeURIComponent(sheet)}&_=${Date.now()}`;
-    document.head.appendChild(s);
-  });
+var SONGS=[
+{t:"서울",a:"쏜애플",g:"남보컬"},
+{t:"항복",a:"윤마치",g:"여보컬"},
+{t:"LETTER",a:"유다빈 밴드",g:"여보컬"},
+{t:"big void",a:"실리카겔",g:"여보컬",n:"첫코드 E > 키업 A 시작"},
+{t:"주지마",a:"로꼬, 화사",g:"듀엣"},
+{t:"너의 기사",a:"데이먼스 이어",g:"남보컬"},
+{t:"ピースサイン (peace sign)",a:"米津玄師 (Yonezu Kenshi)",g:"남보컬"},
+{t:"Champagne Supernova",a:"Oasis",g:"남보컬"}
+];
+var N=SONGS.length,order=SONGS.map(function(_,i){return i}),votes=[],db=null,myId=null,submitted=false,tab="v";
+var $=function(i){return document.getElementById(i)};
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function row(i,pos,extra){var s=SONGS[i];return '<b>'+esc(s.t)+'</b><small>'+esc(s.a)+' · '+s.g+(s.n?' · '+esc(s.n):'')+'</small>'}
+function renderV(){
+  $("v").innerHTML=order.map(function(i,p){
+    return '<div class="item"><div class="n">'+(p+1)+'</div><div class="t">'+row(i)+'</div><div class="mv"><button data-u="'+p+'"'+(p==0?' disabled':'')+'>▲</button><button data-d="'+p+'"'+(p==N-1?' disabled':'')+'>▼</button></div></div>';
+  }).join("");
 }
-
-function parseCSV(t){
-  const rows=[];let row=[],f="",q=false;
-  for(let i=0;i<t.length;i++){const c=t[i];
-    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
-    else if(c==='"') q=true;
-    else if(c===','){row.push(f);f="";}
-    else if(c==='\n'){row.push(f);rows.push(row);row=[];f="";}
-    else if(c!=='\r') f+=c;
-  }
-  if(f!==""||row.length){row.push(f);rows.push(row);}
-  return rows;
+$("v").onclick=function(e){
+  var u=e.target.getAttribute("data-u"),d=e.target.getAttribute("data-d"),p;
+  if(u!==null){p=+u;order.splice(p-1,0,order.splice(p,1)[0])}
+  else if(d!==null){p=+d;order.splice(p+1,0,order.splice(p,1)[0])}
+  else return;
+  renderV();
+};
+function renderR(){
+  var sc=SONGS.map(function(){return 0});
+  votes.forEach(function(v){(v.order||[]).forEach(function(i,p){if(sc[i]!==undefined)sc[i]+=N-p})});
+  var max=Math.max.apply(null,sc.concat([1]));
+  var idx=SONGS.map(function(_,i){return i}).sort(function(a,b){return sc[b]-sc[a]||a-b});
+  $("cnt").textContent="("+votes.length+"명)";
+  $("r").innerHTML=votes.length?idx.map(function(i,p){
+    return '<div class="item"><div class="fill" style="width:'+(sc[i]/max*100)+'%"></div><div class="n">'+(p+1)+'</div><div class="t">'+row(i)+'</div><div class="pts">'+sc[i]+'점</div></div>';
+  }).join("")+'<div class="msg">1위='+N+'점 … '+N+'위=1점 방식으로 합산</div>'+cmts():'<div class="msg">아직 투표가 없어요</div>';
 }
-const clean = s => (s||"").replace(/\s+/g," ").trim();
-const keyOf = s => clean(s).toLowerCase().replace(/[\s\-–]/g,"");
-const pretty = s => clean(s).replace(/\s*-\s*/," - ");
-
-function parseMember(member, rows){
-  const out={cand:[],exist:[],memo:[]};let mode=null;
-  for(const r of rows){
-    const c=r.map(clean); const a=c[0];
-    if(!c.some(Boolean)) continue;
-    if(a==="곡정하기"){mode="cand";continue;}
-    // 기존곡 구역 머리글: A열이 '기존곡 의견'/'베이스 정리' 등이거나, B·C열이 취향/합주(익숙함) 머리글인 행
-    if(/^(기존곡|베이스\s*정리)/.test(a) || (a && (c[1]||"").startsWith("취향") && /합주|익숙/.test(c[2]||""))){mode="exist";continue;}
-    if(!a){ const t=c.filter(Boolean).join(" "); if(t) out.memo.push(t); continue; }
-    if(mode==="cand"){
-      const extra=c.slice(5).filter(Boolean);
-      out.cand.push({song:a,a:c[2],b:c[3],comment:c[4],links:extra});
-    }else if(mode==="exist"){
-      out.exist.push({song:a,a:c[1],b:c[2],comment:c[3],links:c.slice(4).filter(Boolean)});
-    }
-  }
-  return out;
+function show(t){tab=t;$("v").hidden=t!="v";$("f").hidden=t!="v";$("r").hidden=t!="r";$("tv").className=t=="v"?"on":"";$("tr").className=t=="r"?"on":""}
+$("tv").onclick=function(){show("v")};$("tr").onclick=function(){if(!submitted){$("msg").textContent="🔒 투표를 제출하면 결과를 볼 수 있어요.";return}show("r")};
+function sync(){$("lk").hidden=submitted;$("sub").textContent=submitted?'투표 수정하기':'투표 제출'}
+function cmts(){
+  var c=votes.filter(function(v){return v.comment&&v.comment.trim()}).sort(function(a,b){return (b.t||0)-(a.t||0)});
+  if(!c.length)return '';
+  return '<h2>💬 코멘트 ('+c.length+')</h2>'+c.map(function(v){return '<div class="cm"><b>'+esc(v.name&&v.name.trim()||'익명')+'</b>'+esc(v.comment)+'</div>'}).join('');
 }
-
-function aggregate(all, kind, A, B){
-  const map=new Map(); let order=0;
-  for(const m of MEMBERS){
-    const d=all[m]; if(!d || !inKind(m,kind)) continue;
-    for(const e of d[kind]){
-      const k=keyOf(e.song);
-      if(!map.has(k)) map.set(k,{name:pretty(e.song),order:order++,res:[]});
-      map.get(k).res.push({member:m,...e});
-    }
-  }
-  const songs=[...map.values()].map(s=>{
-    const av=s.res.map(r=>A[r.a]).filter(v=>v!==undefined);
-    const bv=s.res.map(r=>B[r.b]).filter(v=>v!==undefined);
-    const avg=v=>v.length? v.reduce((x,y)=>x+y,0)/v.length/2*100 : null;
-    const a=avg(av), b=avg(bv);
-    const total = a==null&&b==null ? null : ((a??0)+(b??0))/((a!=null)+(b!=null));
-    const vetoA=s.res.filter(r=>A[r.a]===0).length;
-    const vetoB=s.res.filter(r=>B[r.b]===0).length;
-    const blank=s.res.filter(r=>B[r.b]===undefined).length;
-    return {...s,a,b,total,vetoA,vetoB,blank,na:av.length,nb:bv.length};
-  });
-  return songs;
+async function submit(){
+  if(!db||!myId){$("msg").textContent="로그인 상태에서만 투표할 수 있어요.";return}
+  $("sub").disabled=true;
+  try{
+    await db.doc("votes/"+myId).set({order:order.slice(),name:$("nm").value.trim().slice(0,20),comment:$("cm").value.trim().slice(0,300),t:Date.now()});
+    submitted=true;sync();$("msg").textContent="✅ 투표 완료! 결과는 실시간으로 업데이트돼요.";show("r");
+  }catch(e){$("msg").textContent="제출 실패: 권한이 없거나 오류가 발생했어요."}
+  $("sub").disabled=false;renderV();
 }
-
-/* ===== 렌더 ===== */
-let DATA=null, TAB="cand", SORT="total", PTAB="cand", SHOW_ALL=false;
-const TOP_N=5;
-const $=id=>document.getElementById(id);
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const color=p=>p==null?"var(--none)":p>=75?"var(--good)":p>=45?"var(--mid)":"var(--bad)";
-function chip(v,table){
-  if(!v) return `<span class="chip x">—</span>`;
-  const s=table[v]; const cls=s===2?"g":s===1?"y":s===0?"r":"x";
-  return `<span class="chip ${cls}">${esc(v)}</span>`;
-}
-const linkify=t=>esc(t).replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener">링크</a>');
-
-function render(){
-  if(!DATA) return;
-  const isC=TAB==="cand";
-  const A=isC?CAND_A:EXIST_A, B=isC?CAND_B:EXIST_B;
-  const labA="취향", labB=isC?"합주":"숙련";
-  $("sort").options[2].textContent=labB+"점수";
-  $("legend").textContent = isC
-    ? "점수는 100점 환산 평균 · 취향: 좋음 2 / 무난 1 / 이건 좀 0 · 합주: 난 가능 2 / 해봐야 알 듯 1 / 이건 좀 0 · 빈칸 제외"
-    : "점수는 100점 환산 평균 · 취향: 좋음 2 / 그냥그냥 1 · 숙련: 편하게 침 2 / 그냥저냥 1 / 좀 빡셈 0 · 안쳐봄 제외";
-  const songs=[...(isC?DATA.cand:DATA.exist)];
-  const key=SORT;
-  songs.sort((x,y)=>((y[key]??-1)-(x[key]??-1)) || ((y.total??-1)-(x.total??-1)) || x.order-y.order);
-
-  const open=new Set([...document.querySelectorAll(".item.open")].map(e=>e.dataset.k));
-  const hidden = SHOW_ALL ? 0 : Math.max(0, songs.length-TOP_N);
-  $("list").innerHTML = songs.slice(0, songs.length-hidden).map((s,i)=>{
-    const flags=[];
-    if(isC && (s.vetoA||s.vetoB)) flags.push(`<span class="flag">이건 좀 ${Math.max(s.vetoA,s.vetoB)}명</span>`);
-    if(!isC && s.blank) flags.push(`<span class="flag n">안쳐봄 ${s.blank}명</span>`);
-    if(isC && s.blank) flags.push(`<span class="flag n">합주 미응답 ${s.blank}명</span>`);
-    const sc=(lab,v,n)=>`<div class="sc"><div class="lbl">${lab}<b>${v==null?"–":Math.round(v)}</b></div><div class="bar"><i style="width:${v??0}%;background:${color(v)}"></i></div></div>`;
-    const rows=s.res.map(r=>{
-      const cm=[r.comment,...(r.links||[])].filter(Boolean).map(linkify).join("<br>");
-      return `<tr><td class="m">${esc(r.member)}</td><td class="c">${chip(r.a,A)}</td><td class="c">${chip(r.b,B)}</td><td class="cm">${cm||'<span style="color:var(--muted)">-</span>'}</td></tr>`;
-    }).join("");
-    const k=keyOf(s.name);
-    return `<div class="item${open.has(k)?" open":""}" data-k="${esc(k)}">
-      <div class="row">
-        <div class="rank">${i+1}</div>
-        <div><div class="name">${esc(s.name)}</div>${flags.length?`<div class="flags">${flags.join("")}</div>`:""}</div>
-        <div class="scores">${sc(labA,s.a)}${sc(labB,s.b)}${sc("합계",s.total)}</div>
-        <button class="tg" aria-label="코멘트 펼치기">▶</button>
-      </div>
-      <div class="detail"><table>${rows}</table></div>
-    </div>`;
-  }).join("") || `<div class="state">데이터가 없어요</div>`;
-  if(songs.length>TOP_N){
-    $("list").insertAdjacentHTML("beforeend",
-      `<button class="btn more">${SHOW_ALL?"▲ 5위까지만 보기":`▼ 나머지 ${hidden}곡 더보기`}</button>`);
-  }
-  renderPanel();
-
-  const memos=MEMBERS.flatMap(m=>(DATA.raw[m]?.memo||[]).map(t=>`<div><b>${esc(m)}</b> · ${linkify(t)}</div>`));
-  $("notes").innerHTML = memos.length?`<div class="notes"><h3>기타 메모</h3>${memos.join("")}</div>`:"";
-}
-
-/* 상단: 미응답 체크리스트 + 의견 모아보기 */
-function renderPanel(){
-  const isC=PTAB==="cand", kind=isC?"cand":"exist";
-  const A=isC?CAND_A:EXIST_A, B=isC?CAND_B:EXIST_B, labB=isC?"합주":"숙련";
-  const songs=[...(isC?DATA.cand:DATA.exist)].sort((x,y)=>x.order-y.order);
-
-  // 미응답 체크리스트 (다 채운 멤버는 표시 안 함)
-  const todo=[];
-  for(const m of MEMBERS){
-    const d=DATA.raw[m]; if(!d || !inKind(m,kind)) continue;
-    const mine=new Map(d[kind].map(e=>[keyOf(e.song),e]));
-    if(mine.size===0){ todo.push(`<div class="tm"><b>${esc(m)}</b><ul><li>전체 미응답 <small>(${songs.length}곡)</small></li></ul></div>`); continue; }
-    const items=[];
-    for(const s of songs){
-      const e=mine.get(keyOf(s.name));
-      const miss = !e ? ["취향",labB] : [!e.a&&"취향", !e.b&&labB].filter(Boolean);
-      if(miss.length) items.push(`<li>${esc(s.name)} <small>${miss.join("·")}</small></li>`);
-    }
-    if(items.length) todo.push(`<div class="tm"><b>${esc(m)}</b><ul>${items.join("")}</ul></div>`);
-  }
-  $("todo").innerHTML = `<h3>미응답 체크리스트</h3>` +
-    (todo.length?`<div class="todo">${todo.join("")}</div>`:`<div class="done">모두 응답 완료 ✓</div>`);
-
-  // 의견 모아보기 (코멘트 있는 항목만)
-  const rows=[];
-  for(const s of songs) for(const r of s.res){
-    const cm=[r.comment,...(r.links||[])].filter(Boolean);
-    if(!cm.length) continue;
-    rows.push(`<tr><td class="s">${esc(s.name)}</td><td class="m">${esc(r.member)}</td>
-      <td class="cm">${chip(r.a,A)}${chip(r.b,B)}<div class="txt">${cm.map(linkify).join("<br>")}</div></td></tr>`);
-  }
-  $("opinions").innerHTML = `<h3>의견 (${rows.length}건)</h3>` +
-    (rows.length?`<div class="opwrap"><table class="op">${rows.join("")}</table></div>`:`<div class="done" style="color:var(--muted)">아직 코멘트가 없어요</div>`);
-}
-document.querySelectorAll(".sg").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".sg").forEach(x=>x.classList.toggle("on",x===b));
-  PTAB=b.dataset.ptab; if(DATA) renderPanel();
-});
-
-$("list").addEventListener("click",e=>{
-  if(e.target.closest(".more")){ SHOW_ALL=!SHOW_ALL; render(); return; }
-  const row=e.target.closest(".row"); if(!row) return;
-  row.parentElement.classList.toggle("open");
-});
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x===b));
-  TAB=b.dataset.tab; SHOW_ALL=false; document.querySelectorAll(".item.open").forEach(e=>e.classList.remove("open")); render();
-});
-$("sort").onchange=e=>{SORT=e.target.value;render();};
-
-async function load(){
-  $("meta").textContent="불러오는 중…";
-  const raw={}, failed=[];
-  await Promise.all(MEMBERS.map(async m=>{
-    try{
-      raw[m]=parseMember(m,await jsonp(m));
-    }catch(err){failed.push(m);}
-  }));
-  if(Object.keys(raw).length===0){
-    $("list").innerHTML=`<div class="state err">시트를 읽지 못했어요. 시트 공유가 '링크가 있는 모든 사용자 – 뷰어'인지 확인해 주세요.</div>`;
-    $("meta").textContent="연결 실패"; return;
-  }
-  DATA={raw,cand:aggregate(raw,"cand",CAND_A,CAND_B),exist:aggregate(raw,"exist",EXIST_A,EXIST_B)};
-  const t=new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  $("meta").innerHTML=`응답 ${Object.keys(raw).length}명 · ${t} 기준 · ${AUTO_REFRESH_SEC}초마다 자동 갱신`
-    + (failed.length?` · <span class="err">읽기 실패: ${failed.join(", ")}</span>`:"");
-  render();
-}
-$("reload").onclick=load;
-load();
-setInterval(load, AUTO_REFRESH_SEC*1000);
+renderV();renderR();sync();$("sub").onclick=submit;
+(async function(){
+  try{
+    db=await claude.use("db");var user=await claude.use("user");
+    if(!db||!user){$("msg").textContent="투표하려면 로그인이 필요해요.";return}
+    myId=await user.id();
+    db.collection("votes").onSnapshot(function(snap){
+      var arr=[];
+      (snap.docs||snap).forEach(function(d){var x=typeof d.data=="function"?d.data():d;if(x&&x.order)arr.push(x);
+        var did=d.id;if(did===myId&&x&&x.order&&!submitted){order=x.order.slice();for(var k=0;k<N;k++)if(order.indexOf(k)<0)order.push(k);$("nm").value=x.name||"";$("cm").value=x.comment||"";submitted=true;sync();renderV();show("r")}});
+      votes=arr;renderR();
+      $("lv").textContent="실시간 · 현재 "+arr.length+"명 투표";$("lv").parentNode.className="live on";
+    },function(){$("lv").textContent="실시간 연결 끊김"});
+  }catch(e){$("msg").textContent="투표 서버에 연결하지 못했어요."}
+})();
 </script>
 </body>
 </html>
